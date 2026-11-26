@@ -767,6 +767,7 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
 .music-item small.lic-free { color: #7fe0ab; }
 .music-item small.lic-personal { color: #ffcf7a; }
 .music-item small.lic-local { color: #ffcf7a; }
+.music-item small.lic-user { color: #8fd3ff; }
 .music-item small.lic-unknown { color: rgba(255, 255, 255, 0.3); }
 .music-empty { padding: 14px; text-align: center; color: rgba(255, 255, 255, 0.35); font-size: 12px; line-height: 1.8; }
 .music-player { display: flex; align-items: center; gap: 10px; margin: 6px 0 8px; }
@@ -802,11 +803,13 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
 #musicTime { flex: 0 0 auto; white-space: nowrap; font-size: 10px; color: rgba(255, 255, 255, 0.4); }
 .music-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 8px 0 6px;
 }
 .music-actions button {
   flex: 1;
+  min-width: 92px;
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.14);

@@ -207,8 +207,9 @@ async function handleChat(req, res) {
       model: data.model || model,
     });
   } catch (e) {
+    const code = e.cause && e.cause.code ? `（${e.cause.code}）` : '';
     const message =
-      e.name === 'AbortError' ? '请求超时（60 秒）' : `连接失败：${e.message}`;
+      e.name === 'AbortError' ? '请求超时（60 秒）' : `连接失败：${e.message}${code}`;
     return sendJson(res, 502, { error: message });
   } finally {
     clearTimeout(timer);

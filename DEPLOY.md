@@ -47,7 +47,7 @@ GitHub 右上角 **+ → New repository**：
 | Key | Value |
 |---|---|
 | `HOST` | `0.0.0.0` |
-| `ALLOWED_UPSTREAMS` | `api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com` |
+| `ALLOWED_UPSTREAMS` | `api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com,www.xinyuntoken.com,xinyuntoken.com` |
 
 5. Deploy，等几分钟
 6. 打开 `https://xxx.onrender.com/after.html`
@@ -90,7 +90,7 @@ git push -u origin main
 | Key | Value |
 |---|---|
 | `HOST` | `0.0.0.0` |
-| `ALLOWED_UPSTREAMS` | `api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com` |
+| `ALLOWED_UPSTREAMS` | `api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com,www.xinyuntoken.com,xinyuntoken.com` |
 
 `ALLOWED_UPSTREAMS` 是**必须的**：不然 `/api/chat` 会变成任何人都能用的任意代理（SSRF）。
 用户要用别的 OpenAI 兼容站，把它加进这个逗号分隔的列表即可。

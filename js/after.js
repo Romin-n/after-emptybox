@@ -169,6 +169,8 @@ const els = {
   musicVol: $('#musicVol'),
   musicOpen: $('#musicOpen'),
   musicRefresh: $('#musicRefresh'),
+  musicAdd: $('#musicAdd'),
+  musicUpload: $('#musicUpload'),
   nowPlaying: $('#nowPlaying'),
   npTitle: $('#npTitle'),
   permMini: $('#permMini'),
@@ -186,6 +188,7 @@ const els = {
   aiModel: $('#aiModel'),
   aiKey: $('#aiKey'),
   aiSave: $('#aiSave'),
+  aiTest: $('#aiTest'),
   talkCG: $('#talkCG'),
   talkSwitch: $('#talkSwitch'),
   cgSet: $('#cgSet'),
@@ -1069,6 +1072,44 @@ els.aiSave.addEventListener('click', () => {
   localStorage.setItem('after.ai', JSON.stringify(cfg));
   els.aiMini.hidden = true;
 });
+els.aiTest.addEventListener('click', async () => {
+  const endpoint = els.aiEndpoint.value.trim();
+  const key = els.aiKey.value.trim();
+  const model = els.aiModel.value.trim() || 'deepseek-chat';
+  if (!endpoint) {
+    toast('先填接口地址');
+    return;
+  }
+  if (!key) {
+    toast('先填 API Key');
+    return;
+  }
+  const label = els.aiTest.textContent;
+  els.aiTest.disabled = true;
+  els.aiTest.textContent = '测试中…';
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint,
+        key,
+        model,
+        temperature: 0,
+        maxTokens: 8,
+        messages: [{ role: 'user', content: 'ping' }],
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    toast(`连接成功 · ${model}`);
+  } catch (e) {
+    toast(`连接失败：${e.message}`);
+  } finally {
+    els.aiTest.disabled = false;
+    els.aiTest.textContent = label;
+  }
+});
 
 /* ---------------- CG 查看 / 保存 ---------------- */
 let cgList = [];
@@ -1182,6 +1223,8 @@ const MUSIC_LINES = {
 const music = {
   audio: new Audio(),
   tracks: [],
+  userTracks: [],
+  userTracksReady: false,
   index: -1,
   lineFor: -1,
 };
@@ -1215,7 +1258,58 @@ async function loadLicenses() {
   }
 }
 
+function openMusicDB() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) {
+      reject(new Error('no indexedDB'));
+      return;
+    }
+    const req = indexedDB.open('after-music', 1);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains('tracks')) {
+        req.result.createObjectStore('tracks', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadUserTracks() {
+  try {
+    const db = await openMusicDB();
+    const rows = await new Promise((resolve, reject) => {
+      const tx = db.transaction('tracks', 'readonly');
+      const req = tx.objectStore('tracks').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+    music.userTracks = rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      file: row.file || row.name,
+      user: true,
+      blob: row.blob,
+      url: URL.createObjectURL(row.blob),
+    }));
+  } catch {
+    music.userTracks = [];
+  }
+  music.userTracksReady = true;
+}
+
+async function saveUserTrack(row) {
+  const db = await openMusicDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction('tracks', 'readwrite');
+    tx.objectStore('tracks').put(row);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
 function ownerOf(t) {
+  if (t.user) return 'user';
   for (const [id, list] of Object.entries(musicMap)) {
     if (Array.isArray(list) && list.some((title) => t.name.endsWith(title))) return id;
   }
@@ -1223,6 +1317,7 @@ function ownerOf(t) {
 }
 
 function ownerLabel(id) {
+  if (id === 'user') return '我的';
   if (id === 'common') return '共同';
   if (id === 'other') return '其他';
   const ch = CAST.find((c) => c.id === id);
@@ -1255,9 +1350,11 @@ function renderMusic() {
   els.musicList.replaceChildren();
   let filtered;
   if (musicTab === 'mine') {
-    filtered = music.tracks.filter((t) => ownerOf(t) === CAST[active].id);
+    filtered = music.tracks.filter((t) => !t.user && ownerOf(t) === CAST[active].id);
+  } else if (musicTab === 'my') {
+    filtered = music.tracks.filter((t) => t.user);
   } else if (musicTab === 'free') {
-    filtered = music.tracks.filter((t) => !t.local && licenseOf(t) === 'free');
+    filtered = music.tracks.filter((t) => !t.user && !t.local && licenseOf(t) === 'free');
   } else {
     filtered = music.tracks;
   }
@@ -1267,14 +1364,16 @@ function renderMusic() {
     p.className = 'music-empty';
     if (!music.tracks.length) {
       p.innerHTML =
-        '<b>这里还没有歌</b><br>本地版：把 mp3 / flac 放进程序目录的 <code>music/</code> 文件夹，再点「刷新列表」。<br>公开版：由管理员添加，玩家不能上传。';
+        '<b>这里还没有歌</b><br>点「添加本地音乐」，歌曲只存在你的浏览器，不会上传，也不会和其他人共享。';
     } else {
       p.textContent =
         musicTab === 'mine'
           ? '他的歌还没下载。切到「全部」看看。'
-          : musicTab === 'free'
-            ? '还没有标记为「可商用」的曲目。'
-            : '这里还没有歌。';
+          : musicTab === 'my'
+            ? '还没有添加本地音乐。'
+            : musicTab === 'free'
+              ? '还没有标记为「可商用」的曲目。'
+              : '这里还没有歌。';
     }
     els.musicList.appendChild(p);
     return;
@@ -1292,12 +1391,13 @@ function renderMusic() {
     const name = document.createElement('span');
     name.textContent = t.name;
     const ext = document.createElement('small');
+    const isUser = !!t.user;
     const isLocal = !!t.local;
-    const lic = isLocal ? 'local' : licenseOf(t);
+    const lic = isUser ? 'user' : isLocal ? 'local' : licenseOf(t);
     const owner = ownerOf(t);
     ext.className = `lic-${lic}`;
     ext.textContent =
-      `${(t.file.split('.').pop() || '').toUpperCase()} · ${isLocal ? '仅本地' : licenseLabel(lic)}` +
+      `${(t.file.split('.').pop() || '').toUpperCase()} · ${isUser ? '仅本机' : isLocal ? '仅本地' : licenseLabel(lic)}` +
       (musicTab === 'all' && owner !== 'other' ? ` · ${ownerLabel(owner)}` : '');
     b.append(name, ext);
     b.addEventListener('click', () => playTrack(i));
@@ -1306,13 +1406,16 @@ function renderMusic() {
 }
 
 async function loadMusic() {
+  if (!music.userTracksReady) await loadUserTracks();
+  let serverTracks = [];
   try {
     const res = await fetch('/api/music/list');
     const data = await res.json();
-    music.tracks = Array.isArray(data.tracks) ? data.tracks : [];
+    serverTracks = Array.isArray(data.tracks) ? data.tracks : [];
   } catch {
-    music.tracks = [];
+    serverTracks = [];
   }
+  music.tracks = [...serverTracks, ...music.userTracks];
   if (!Object.keys(musicMap).length) await loadMusicMap();
   if (!Object.keys(licenseMap).length) await loadLicenses();
   renderMusic();
@@ -1320,11 +1423,54 @@ async function loadMusic() {
   if (
     musicTab === 'mine' &&
     music.tracks.length &&
-    !music.tracks.some((t) => ownerOf(t) === CAST[active].id)
+    !music.tracks.some((t) => !t.user && ownerOf(t) === CAST[active].id)
   ) {
-    musicTab = music.tracks.some((t) => licenseOf(t) === 'free') ? 'free' : 'all';
+    musicTab = music.tracks.some((t) => t.user)
+      ? 'my'
+      : music.tracks.some((t) => licenseOf(t) === 'free')
+        ? 'free'
+        : 'all';
     updateMusicTabs();
     renderMusic();
+  }
+}
+
+async function addUserFiles(files) {
+  const list = [...files].filter(
+    (f) => /^audio\//.test(f.type) || /\.(mp3|flac|m4a|wav|ogg|aac)$/i.test(f.name),
+  );
+  if (!list.length) {
+    toast('这些不是音频文件');
+    return;
+  }
+
+  let added = 0;
+  for (const file of list) {
+    if (file.size > 80 * 1024 * 1024) {
+      toast(`${file.name} 太大，跳过`);
+      continue;
+    }
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const name = file.name.replace(/\.[^.]+$/, '');
+    const row = { id, name, file: file.name, blob: file };
+    try {
+      await saveUserTrack(row);
+    } catch {
+      /* 内存里也能播，只是刷新后消失 */
+    }
+    const track = { ...row, user: true, url: URL.createObjectURL(file) };
+    music.userTracks.push(track);
+    music.tracks.push(track);
+    added++;
+  }
+
+  if (added) {
+    musicTab = 'my';
+    updateMusicTabs();
+    renderMusic();
+    toast(`已添加 ${added} 首（仅本机）`);
+  } else {
+    toast('没有添加成功');
   }
 }
 
@@ -1399,6 +1545,13 @@ els.musicPlay.addEventListener('click', toggleMusic);
 els.musicRefresh.addEventListener('click', async () => {
   await loadMusic();
   toast('已刷新');
+});
+els.musicAdd.addEventListener('click', () => els.musicUpload.click());
+els.musicUpload.addEventListener('change', async () => {
+  if (els.musicUpload.files && els.musicUpload.files.length) {
+    await addUserFiles(els.musicUpload.files);
+  }
+  els.musicUpload.value = '';
 });
 els.musicOpen.addEventListener('click', async () => {
   try {

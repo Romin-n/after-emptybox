@@ -20,7 +20,7 @@ if ('serviceWorker' in navigator) {
 </script>
 <title>EmptyBox · After</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050606'/%3E%3Cpath d='M16 7v18M7 16h18' stroke='%23e01b2f' stroke-width='2'/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/after.css?v=83" />
+<link rel="stylesheet" href="css/after.css?v=85" />
 </head>
 <body>
 <main class="main" id="main">
@@ -224,6 +224,7 @@ if ('serviceWorker' in navigator) {
     <input id="aiEndpoint" placeholder="接口地址，如 https://api.deepseek.com/v1" />
     <input id="aiModel" placeholder="模型，如 deepseek-chat" />
     <input id="aiKey" type="password" placeholder="API Key" autocomplete="off" />
+    <button id="aiTest">测试连接</button>
     <button id="aiSave">保存</button>
     <button data-close>取消</button>
   </div>
@@ -234,10 +235,11 @@ if ('serviceWorker' in navigator) {
     <h3>一起听</h3>
     <div class="level-row" id="musicTabs">
       <button data-tab="mine">他的歌</button>
+      <button data-tab="my">我的</button>
       <button data-tab="all">全部</button>
       <button data-tab="free">可商用</button>
     </div>
-    <p class="mini-note">本地版：把歌放进程序目录的 <b>music/</b> 文件夹，点「刷新列表」。公开版：由管理员添加。</p>
+    <p class="mini-note">本地版可把歌放进 <b>music/</b> 文件夹；公开版点「添加本地音乐」，只存在你的浏览器，不上传、不共享。</p>
     <p class="mini-note">「仅本地 / 仅个人 / 待确认」的曲目不要随项目公开分发。</p>
     <div class="music-list" id="musicList"></div>
     <div class="music-seek-row">
@@ -256,9 +258,11 @@ if ('serviceWorker' in navigator) {
       <input class="music-vol" type="range" id="musicVol" min="0" max="100" value="80" />
     </div>
     <div class="music-actions">
+      <button id="musicAdd">添加本地音乐</button>
       <button id="musicOpen">打开 music 文件夹</button>
       <button id="musicRefresh">刷新列表</button>
     </div>
+    <input type="file" id="musicUpload" accept="audio/*,.mp3,.flac,.m4a,.wav,.ogg,.aac" multiple hidden />
     <button data-close>关闭</button>
   </div>
 </div>
@@ -323,6 +327,6 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<script type="module" src="js/after.js?v=83"></script>
+<script type="module" src="js/after.js?v=85"></script>
 </body>
 </html>

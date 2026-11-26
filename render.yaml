@@ -10,4 +10,4 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: ALLOWED_UPSTREAMS
-        value: api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com
+        value: api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com,www.xinyuntoken.com,xinyuntoken.com
