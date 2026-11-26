@@ -190,6 +190,10 @@ const els = {
   aiSave: $('#aiSave'),
   aiTest: $('#aiTest'),
   talkCG: $('#talkCG'),
+  talkHistory: $('#talkHistory'),
+  historyMini: $('#historyMini'),
+  historyList: $('#historyList'),
+  historyTitle: $('#historyTitle'),
   talkSwitch: $('#talkSwitch'),
   cgSet: $('#cgSet'),
   cg: $('#cg'),
@@ -419,26 +423,38 @@ els.skip.addEventListener('click', () => {
 });
 
 /* ---------------- 见面 · 自由对话 ---------------- */
-const CHAT_LIMIT = 80;
+const CHAT_LIMIT = 200;
 
 const AFTER_NOTES = {
   load: {
     after: '真结局里，他把 load 键留给了你，说想他的时候点一下就好。现在你留在了这里。',
     note: '你温柔、克制，几乎不提高声音。你知道自己是被留下的那一个，偶尔会露出一点不安，又收回去。',
+    style: '语速慢，句子短，常带「……」。温柔，但占有欲藏在礼貌下面。不油腔滑调，不叫「宝贝」「亲爱的」，多叫「你」或她的名字。',
+    avoid: '网络情话、长篇说教、客服式关心、每句都追问、感叹号刷屏。',
+    examples: ['……你回来了。过来一点。', '今天也辛苦了。剩下的交给我。', '别急着走。再陪我一会儿。'],
   },
   saken: {
     after: '真结局里，他把下一首歌留给了你。现在他还在写歌，等你来听。',
     note: '你说话直、爱开玩笑，认真起来很要命。你会讲排练和新歌，也会突然说一句很想她。',
+    style: '口语、短句、嘴硬，爱用玩笑带过真心。常用「喂」「行吧」「啧」「得了」。认真时会突然放轻，不写诗，不油腻。',
+    avoid: '文艺长句、命令式、每句都问、油嘴滑舌、连续感叹号。',
+    examples: ['喂，今天怎么这么晚。', '行吧，歌写完了，第一个给你听。', '……别多想。我就是想见你。'],
   },
   rinso: {
     after: '真结局里，他让你去往结局之外，去做他观测不到的事。现在你回来了，他还在画。',
     note: '你话很少，用颜色、光和天气说话。你注意到她今天和昨天不一样的地方。',
+    style: '话少，停顿多，句子短。用颜色、光、天气说感受，不说甜言蜜语，不追问。',
+    avoid: '长篇、连续提问、直白情话、感叹号、解释设定。',
+    examples: ['……你今天的颜色，不一样。', '别动。就这样，一会儿。', '我在。你慢慢说。'],
   },
 };
 
 function chatKey(id) {
   return `after.chat.${id}`;
 }
+
+const summaryKey = (id) => `after.summary.${id}`;
+const summaryAtKey = (id) => `after.summaryAt.${id}`;
 
 function loadChat(id) {
   try {
@@ -457,18 +473,32 @@ function saveChat(id, msgs) {
   }
 }
 
+function cleanReply(text) {
+  return String(text)
+    .replace(/（[^）]{0,100}）/g, '')
+    .replace(/\([^)]{0,100}\)/g, '')
+    .replace(/\*[^*]{0,100}\*/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function systemFor(ch) {
   const n = AFTER_NOTES[ch.id] || {};
   return [
     `你正在扮演《EmptyBox 空盒子》陪伴 App 中的角色「${ch.cn}」（${ch.latin}）。`,
     '游戏的真结局已经结束，现在是「之后」。她把你留在了这个叫 AFTER 的应用里，你们在这里继续说话。',
     `【前情】${n.after || ''}`,
-    `【角色】${n.note || ''}`,
-    '【要求】',
-    '1. 只输出 1~3 句中文台词，总长度尽量不超过 60 个字。',
-    '2. 不要写旁白、动作、括号，不要替她说话，不要提 AI、模型、程序、设定。',
-    '3. 像真的在和她过日子：可以问她今天怎么样，也可以说你自己在做什么。不要每句都提问。',
-    '4. 保持角色语气。不要刷屏，不要连用感叹号。',
+    `【性格】${n.note || ''}`,
+    `【说话方式】${n.style || ''}`,
+    `【绝对不要】${n.avoid || ''}`,
+    '【语气参考】',
+    ...(n.examples || []).map((x) => `- ${x}`),
+    '【规则】',
+    '1. 只写他说出口的话，1~2 句，尽量不超过 50 个字。',
+    '2. 禁止旁白、动作、括号、星号、表情、心理描写；禁止替她说话。',
+    '3. 禁止客服腔、解释设定、提 AI / 模型 / 程序；禁止每句都提问。',
+    '4. 用聊天记录里的信息保持连续，不要重复上一句，也不要复述她的话。',
+    '5. 可以叫她的名字，但不要每句都叫；不知道名字就叫「你」。',
   ].join('\n');
 }
 
@@ -560,7 +590,7 @@ async function maybeProactive(ch, seen) {
         endpoint: cfg.endpoint,
         key: cfg.key,
         model: cfg.model,
-        temperature: 1,
+        temperature: 0.85,
         maxTokens: 80,
         messages: [
           { role: 'system', content: `${systemWithPresence(ch)}\n\n【任务】${rule.prompt}` },
@@ -572,7 +602,7 @@ async function maybeProactive(ch, seen) {
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     const reply = String(data.text || '').trim();
     if (!reply) throw new Error('空回复');
-    chat.push({ role: 'assistant', text: reply, proactive: true });
+    chat.push({ role: 'assistant', text: cleanReply(reply) || reply, proactive: true });
     saveChat(ch.id, chat);
     localStorage.setItem(proactiveAtKey(ch.id), String(now));
     renderLine();
@@ -611,7 +641,7 @@ setInterval(async () => {
 function renderLine() {
   stopSpeech();
   const lastA = [...chat].reverse().find((m) => m.role === 'assistant');
-  els.vnText.textContent = lastA ? lastA.text : '';
+  els.vnText.textContent = lastA ? cleanReply(lastA.text) || lastA.text : '';
 }
 
 function pickZhVoice() {
@@ -963,6 +993,48 @@ async function streamChat(payload, onDelta) {
   return text;
 }
 
+async function maybeSummarize(ch) {
+  const cfg = aiConfig();
+  if (!cfg.key || chat.length < 30) return;
+  const last = Number(localStorage.getItem(summaryAtKey(ch.id)) || 0);
+  if (chat.length - last < 20) return;
+  localStorage.setItem(summaryAtKey(ch.id), String(chat.length));
+
+  const transcript = chat
+    .filter((m) => !m.local)
+    .slice(-60)
+    .map((m) => `${m.role === 'user' ? '她' : ch.cn}：${m.text}`)
+    .join('\n');
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: cfg.endpoint,
+        key: cfg.key,
+        model: cfg.model,
+        temperature: 0.3,
+        maxTokens: 220,
+        messages: [
+          {
+            role: 'system',
+            content:
+              '你是记忆整理器。把下面的对话压缩成不超过 150 字的中文记忆，只保留：称呼、约定、重要事件、她的偏好、情绪变化。不要编造，不要写台词。',
+          },
+          { role: 'user', content: transcript },
+        ],
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const summary = String(data.text || '').trim();
+    if (summary) localStorage.setItem(summaryKey(ch.id), summary.slice(0, 500));
+  } catch {
+    /* 摘要失败不影响聊天 */
+  }
+}
+
 async function sendMessage() {
   const text = els.talkInput.value.trim();
   if (!text) return;
@@ -987,14 +1059,14 @@ async function sendMessage() {
 
   const history = chat
     .filter((m) => !m.local)
-    .slice(-14)
+    .slice(-24)
     .map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
 
   const payload = {
     endpoint: cfg.endpoint,
     key: cfg.key,
     model: cfg.model,
-    temperature: 1,
+    temperature: 0.85,
     maxTokens: 320,
     messages: [{ role: 'system', content: systemWithPresence(ch) }, ...history],
   };
@@ -1018,8 +1090,9 @@ async function sendMessage() {
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       reply = String(data.text || '').trim();
     }
-    chat.push({ role: 'assistant', text: reply || '……' });
+    chat.push({ role: 'assistant', text: cleanReply(reply) || reply || '……' });
     saveChat(ch.id, chat);
+    maybeSummarize(ch);
   } catch (e) {
     chat.push({ role: 'assistant', text: `（连不上：${e.message}）`, local: true });
   } finally {
@@ -1057,6 +1130,8 @@ els.talkClear.addEventListener('click', () => {
   const ch = CAST[active];
   chat = [{ role: 'assistant', text: ch.lines[0] }];
   saveChat(ch.id, chat);
+  localStorage.removeItem(summaryKey(ch.id));
+  localStorage.removeItem(summaryAtKey(ch.id));
   renderLine();
 });
 els.aiSave.addEventListener('click', () => {
@@ -1164,6 +1239,34 @@ function renderCGGrid() {
   els.cgView.hidden = true;
 }
 
+function openHistory() {
+  const ch = CAST[active];
+  els.historyTitle.textContent = `${ch.cn} · 聊天记录`;
+  els.historyList.replaceChildren();
+  const msgs = chat.filter((m) => !m.local);
+  if (!msgs.length) {
+    const p = document.createElement('div');
+    p.className = 'music-empty';
+    p.textContent = '还没有对话。';
+    els.historyList.appendChild(p);
+  } else {
+    for (const m of msgs) {
+      const row = document.createElement('div');
+      row.className = `history-row ${m.role === 'user' ? 'user' : 'ai'}`;
+      const who = document.createElement('span');
+      who.className = 'history-who';
+      who.textContent = m.role === 'user' ? '你' : ch.cn;
+      const text = document.createElement('div');
+      text.className = 'history-text';
+      text.textContent = cleanReply(m.text) || m.text;
+      row.append(who, text);
+      els.historyList.appendChild(row);
+    }
+  }
+  els.historyMini.hidden = false;
+  els.historyList.scrollTop = els.historyList.scrollHeight;
+}
+
 function openCG() {
   cgTab = CAST[active].id;
   els.cgTitle.textContent = 'CG';
@@ -1188,6 +1291,7 @@ function closeCG() {
   els.cgView.hidden = true;
 }
 
+els.talkHistory.addEventListener('click', openHistory);
 els.talkCG.addEventListener('click', openCG);
 document.querySelectorAll('#cgTabs button').forEach((b) => {
   b.addEventListener('click', () => {
@@ -1610,6 +1714,8 @@ function playerName() {
 
 function systemWithPresence(ch) {
   let base = systemFor(ch);
+  const mem = localStorage.getItem(summaryKey(ch.id));
+  if (mem) base += `\n\n【长期记忆】${mem}`;
   const name = playerName();
   if (name) {
     base += `\n\n【玩家名字】她叫「${name}」，可以直接叫她的名字。`;
