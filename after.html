@@ -20,7 +20,7 @@ if ('serviceWorker' in navigator) {
 </script>
 <title>EmptyBox · After</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050606'/%3E%3Cpath d='M16 7v18M7 16h18' stroke='%23e01b2f' stroke-width='2'/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/after.css?v=87" />
+<link rel="stylesheet" href="css/after.css?v=89" />
 </head>
 <body>
 <main class="main" id="main">
@@ -50,7 +50,7 @@ if ('serviceWorker' in navigator) {
 
   <footer class="bottom">
     <button class="enter" id="enter"><span>进入之后</span><i>→</i></button>
-    <div class="hint">← → 切换 · 轻触进入 · 非商业陪伴 App</div>
+    <div class="hint" hidden></div>
   </footer>
 </main>
 
@@ -227,6 +227,11 @@ if ('serviceWorker' in navigator) {
     <input id="aiEndpoint" placeholder="接口地址，如 https://api.deepseek.com/v1" />
     <input id="aiModel" placeholder="模型，如 deepseek-chat" />
     <input id="aiKey" type="password" placeholder="API Key" autocomplete="off" />
+    <div class="temp-row">
+      <div class="temp-head"><span>温度</span><b id="aiTempValue">0.85</b></div>
+      <input id="aiTemp" type="range" min="0" max="1.5" step="0.05" value="0.85" />
+    </div>
+    <p class="mini-note">低一点更稳、更像人设；高一点更发散。推荐 0.7–1.0。</p>
     <button id="aiTest">测试连接</button>
     <button id="aiSave">保存</button>
     <button data-close>取消</button>
@@ -338,6 +343,6 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<script type="module" src="js/after.js?v=87"></script>
+<script type="module" src="js/after.js?v=89"></script>
 </body>
 </html>

@@ -187,6 +187,8 @@ const els = {
   aiEndpoint: $('#aiEndpoint'),
   aiModel: $('#aiModel'),
   aiKey: $('#aiKey'),
+  aiTemp: $('#aiTemp'),
+  aiTempValue: $('#aiTempValue'),
   aiSave: $('#aiSave'),
   aiTest: $('#aiTest'),
   talkCG: $('#talkCG'),
@@ -505,18 +507,25 @@ function systemFor(ch) {
 function aiConfig() {
   try {
     const own = JSON.parse(localStorage.getItem('after.ai') || 'null');
-    if (own && own.endpoint) return own;
+    if (own && own.endpoint) {
+      return {
+        ...own,
+        temperature: Number.isFinite(Number(own.temperature)) ? Number(own.temperature) : 0.85,
+      };
+    }
   } catch {
     /* ignore */
   }
   try {
     const st = JSON.parse(localStorage.getItem('eos.state') || 'null');
     const s = (st && st.settings) || {};
-    if (s.endpoint) return { endpoint: s.endpoint, model: s.model || 'deepseek-chat', key: s.key || '' };
+    if (s.endpoint) {
+      return { endpoint: s.endpoint, model: s.model || 'deepseek-chat', key: s.key || '', temperature: 0.85 };
+    }
   } catch {
     /* ignore */
   }
-  return { endpoint: 'https://api.deepseek.com/v1', model: 'deepseek-chat', key: '' };
+  return { endpoint: 'https://api.deepseek.com/v1', model: 'deepseek-chat', key: '', temperature: 0.85 };
 }
 
 let chat = [];
@@ -590,7 +599,7 @@ async function maybeProactive(ch, seen) {
         endpoint: cfg.endpoint,
         key: cfg.key,
         model: cfg.model,
-        temperature: 0.85,
+        temperature: cfg.temperature,
         maxTokens: 80,
         messages: [
           { role: 'system', content: `${systemWithPresence(ch)}\n\n【任务】${rule.prompt}` },
@@ -1066,7 +1075,7 @@ async function sendMessage() {
     endpoint: cfg.endpoint,
     key: cfg.key,
     model: cfg.model,
-    temperature: 0.85,
+    temperature: cfg.temperature,
     maxTokens: 320,
     messages: [{ role: 'system', content: systemWithPresence(ch) }, ...history],
   };
@@ -1105,6 +1114,8 @@ function openAiConfig() {
   els.aiEndpoint.value = cfg.endpoint || '';
   els.aiModel.value = cfg.model || 'deepseek-chat';
   els.aiKey.value = cfg.key || '';
+  els.aiTemp.value = String(cfg.temperature ?? 0.85);
+  els.aiTempValue.textContent = Number(els.aiTemp.value).toFixed(2);
   els.aiMini.hidden = false;
 }
 
@@ -1139,6 +1150,7 @@ els.aiSave.addEventListener('click', () => {
     endpoint: els.aiEndpoint.value.trim(),
     model: els.aiModel.value.trim() || 'deepseek-chat',
     key: els.aiKey.value.trim(),
+    temperature: Number(els.aiTemp.value),
   };
   if (!cfg.endpoint) {
     toast('接口地址不能为空');
@@ -1146,6 +1158,9 @@ els.aiSave.addEventListener('click', () => {
   }
   localStorage.setItem('after.ai', JSON.stringify(cfg));
   els.aiMini.hidden = true;
+});
+els.aiTemp.addEventListener('input', () => {
+  els.aiTempValue.textContent = Number(els.aiTemp.value).toFixed(2);
 });
 els.aiTest.addEventListener('click', async () => {
   const endpoint = els.aiEndpoint.value.trim();

@@ -766,6 +766,24 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
 }
 .history-text { color: rgba(255, 255, 255, 0.78); white-space: pre-wrap; word-break: break-word; }
 
+.temp-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+}
+.temp-head { display: flex; align-items: center; justify-content: space-between; }
+.temp-head b { color: #fff; font-weight: 500; }
+.mini-card .temp-row input[type="range"] {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--c2, #cdb6ff);
+}
+
 .music-card { width: min(460px, 92vw); }
 .music-list {
   max-height: 38vh;
