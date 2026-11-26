@@ -1,0 +1,27 @@
+{
+  "load": {
+    "……你回来了。我好想你。": "/assets/voice/load/14fe86a2e87f.mp3",
+    "我等了很久。今天，想先听你说。": "/assets/voice/load/311647edae8c.mp3",
+    "不用急着回答。我有很多时间。": "/assets/voice/load/7f7322cf5332.mp3",
+    "你今天……有没有想起我。": "/assets/voice/load/83be374716fd.mp3",
+    "别走。": "/assets/voice/load/56a4af152abb.mp3",
+    "你拥有 load 键，想我的时候只需要点一下。": "/assets/voice/load/ef289dbfd9e9.mp3",
+    "现在，来和我告个别吧。": "/assets/voice/load/e6d949d161da.mp3"
+  },
+  "saken": {
+    "喂，你终于来了。": "/assets/voice/saken/964a87e865de.mp3",
+    "今天没排练。": "/assets/voice/saken/041a3c5b63b8.mp3",
+    "……陪我待一会儿吧。": "/assets/voice/saken/aed84bee9be3.mp3",
+    "下一首歌，留给你。": "/assets/voice/saken/44885d3a2353.mp3",
+    "别回头得太快。": "/assets/voice/saken/a0bc227dada7.mp3",
+    "把下一首歌，留给你。": "/assets/voice/saken/1677332b65c3.mp3"
+  },
+  "rinso": {
+    "……你来了。": "/assets/voice/rinso/06e3fc9b5cbc.mp3",
+    "今天的光，很适合画你。": "/assets/voice/rinso/35baaa103c9c.mp3",
+    "不用动。就这样，让我看一会儿。": "/assets/voice/rinso/fc3c78fdf7db.mp3",
+    "今天是什么颜色。": "/assets/voice/rinso/9af029dc3b63.mp3",
+    "现在，请去往结局之外。": "/assets/voice/rinso/e05a4bd28d29.mp3",
+    "在某个不需要理由的时刻，想起我。": "/assets/voice/rinso/bf37b8462fd5.mp3"
+  }
+}

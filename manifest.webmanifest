@@ -1,0 +1,22 @@
+{
+  "name": "AFTER · EmptyBox",
+  "short_name": "AFTER",
+  "description": "EmptyBox 陪伴 App",
+  "start_url": "/after.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07070a",
+  "theme_color": "#07070a",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

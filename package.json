@@ -1,0 +1,15 @@
+{
+  "name": "after-emptybox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AFTER · EmptyBox 陪伴 App",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs --open",
+    "lan": "node server.mjs --lan"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

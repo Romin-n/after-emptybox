@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content" />
+<meta name="theme-color" content="#050506" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="AFTER" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="application-name" content="AFTER" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+<title>EmptyBox · After</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050606'/%3E%3Cpath d='M16 7v18M7 16h18' stroke='%23e01b2f' stroke-width='2'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/after.css?v=79" />
+</head>
+<body>
+<main class="main" id="main">
+  <div class="portrait" id="portrait"></div>
+  <div class="portrait next" id="portraitNext"></div>
+  <div class="char-card"><div class="char-card-img" id="charCardImg"></div></div>
+  <div class="wash" id="wash"></div>
+  <div class="grain"></div>
+
+  <header class="top">
+    <div class="brand">EMPTYBOX<span>/ AFTER</span></div>
+    <div class="top-actions">
+      <button data-act="perm">权限</button>
+      <button data-act="settings">设置</button>
+    </div>
+  </header>
+
+  <section class="stage" id="stage">
+    <div class="type">
+      <div class="latin" id="latin">RINso</div>
+      <div class="cn" id="cn">「林创」</div>
+      <p class="quote" id="quote">「你不用说话。我听得见。」</p>
+      <p class="desc" id="desc"></p>
+    </div>
+  </section>
+
+  <nav class="cast" id="cast"></nav>
+
+  <footer class="bottom">
+    <button class="enter" id="enter"><span>进入之后</span><i>→</i></button>
+    <div class="hint">← → 切换 · 轻触进入 · 非商业陪伴 App</div>
+  </footer>
+</main>
+
+<!-- 开场 -->
+<div class="intro" id="intro">
+  <video id="introVideo" playsinline preload="auto" muted autoplay></video>
+  <div class="intro-css" id="introCss" hidden>
+    <div class="ic-glow"></div>
+    <div class="ic-stage">
+      <svg class="ic-box" viewBox="0 0 600 420" fill="none">
+        <path
+          class="ic-line ic-body"
+          pathLength="1"
+          d="M170 170 H430 A26 26 0 0 1 456 196 V300 A26 26 0 0 1 430 326 H170 A26 26 0 0 1 144 300 V196 A26 26 0 0 1 170 170 Z"
+        />
+        <path class="ic-line ic-seam" pathLength="1" d="M144 214 H456" />
+        <path class="ic-line ic-handle" pathLength="1" d="M144 220 H126 V262 H144" />
+        <path class="ic-line ic-handle" pathLength="1" d="M456 220 H474 V262 H456" />
+        <text class="ic-empty" x="300" y="294" text-anchor="middle">EMPTY</text>
+      </svg>
+      <div class="ic-leak"></div>
+      <div class="ic-after">
+        <span class="ic-kicker">EMPTYBOX</span>
+        <span class="ic-word">AFTER</span>
+      </div>
+    </div>
+  </div>
+  <button class="start" id="start" hidden>
+    <span>轻触开始</span>
+    <small>静音播放</small>
+  </button>
+  <button class="skip" id="skip" hidden>跳过</button>
+  <div class="fallback" id="fallback" hidden>
+    <div class="fb-flash f1"></div>
+    <div class="fb-flash f2"></div>
+    <div class="fb-flash f3"></div>
+    <div class="fb-line" id="fbLine">如果可以的话——<br />我想再陪你久一点</div>
+  </div>
+</div>
+
+<!-- 见面 · 游戏式对话 -->
+<div class="scene" id="scene" hidden>
+  <div class="scene-bg"></div>
+  <div class="scene-grain"></div>
+  <button class="scene-back" id="sceneBack">←</button>
+
+  <div class="vn-tools">
+    <button id="talkMusic" aria-label="一起听">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+    </button>
+    <button id="talkSwitch" aria-label="换一张 CG">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4" /><path d="M21 3v6h-6" /></svg>
+    </button>
+    <button id="talkCG" aria-label="查看 CG">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="M21 16l-5-5L5 20" /></svg>
+    </button>
+    <button id="talkConfig" aria-label="接口设置">⚙</button>
+    <button id="talkClear">清空</button>
+  </div>
+
+  <button class="now-playing" id="nowPlaying" hidden>
+    <span class="np-dot"></span><span id="npTitle"></span>
+  </button>
+
+  <div class="vn" id="vn">
+    <div class="vn-head">
+      <div class="vn-speaker" id="talkName">Load</div>
+      <button class="vn-voice" id="vnVoice" aria-label="朗读">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z" /><path d="M16 9a4 4 0 0 1 0 6" /><path d="M19 6a8 8 0 0 1 0 12" /></svg>
+      </button>
+    </div>
+    <p class="vn-text" id="vnText">……你回来了。</p>
+    <form class="vn-input-line" id="talkForm">
+      <span class="vn-arrow">›</span>
+      <input id="talkInput" placeholder="说点什么……" autocomplete="off" maxlength="600" />
+      <button type="submit" id="talkSend">发送</button>
+    </form>
+  </div>
+</div>
+
+<div class="mini" id="mini" hidden>
+  <div class="mini-card">
+    <h3>设置</h3>
+    <div class="mini-row">
+      <div>
+        <b>主动消息</b>
+        <small>很久没来时，他会先开口</small>
+      </div>
+      <button class="switch" id="proactiveToggle" aria-pressed="false"><i></i></button>
+    </div>
+    <div class="proactive-extra" id="proactiveExtra" hidden>
+      <div class="level-row" id="proactiveLevels">
+        <button data-level="low">克制</button>
+        <button data-level="normal">标准</button>
+        <button data-level="high">粘人</button>
+      </div>
+      <p class="mini-note" id="proactiveHint"></p>
+    </div>
+    <div class="name-row">
+      <span>你的名字</span>
+      <input id="playerName" maxlength="12" placeholder="不填就叫你" />
+    </div>
+    <button id="openVoice">语音设置</button>
+    <button id="openStatus">他现在知道</button>
+    <button id="openAbout">关于 / 版权</button>
+    <button data-replay="css">重看开场 · AFTER</button>
+    <button data-close>关闭</button>
+  </div>
+</div>
+
+<div class="mini" id="voiceMini" hidden>
+  <div class="mini-card">
+    <h3>语音</h3>
+    <div class="level-row" id="voiceProviders">
+      <button data-provider="minimax">MiniMax</button>
+      <button data-provider="elevenlabs">ElevenLabs</button>
+    </div>
+    <div id="voiceMm" hidden>
+      <input id="voiceKey" type="password" placeholder="MiniMax API Key" autocomplete="off" />
+      <input id="voiceGroup" placeholder="GroupId（旧版 Key 才需要，可留空）" autocomplete="off" />
+      <p class="mini-label">L 的 voice_id</p>
+      <input id="voiceLoad" placeholder="male-qn-jingying" />
+      <p class="mini-label">左见 的 voice_id</p>
+      <input id="voiceSaken" placeholder="male-qn-badao" />
+      <p class="mini-label">林创 的 voice_id</p>
+      <input id="voiceRinso" placeholder="male-qn-qingse" />
+      <p class="mini-note">教程：打开 platform.minimaxi.com → 登录 → 创建 API Key；voice_id 在音色列表里选。预生成语音包会优先播放。</p>
+      <a class="mini-link" href="https://platform.minimaxi.com/" target="_blank" rel="noreferrer">打开 MiniMax 开放平台 →</a>
+    </div>
+    <div id="voiceEl" hidden>
+      <input id="elKey" type="password" placeholder="ElevenLabs API Key" autocomplete="off" />
+      <input id="elModel" placeholder="模型（默认 eleven_multilingual_v2）" />
+      <p class="mini-label">L 的 voice_id</p>
+      <input id="elLoad" placeholder="ElevenLabs voice_id" />
+      <p class="mini-label">左见 的 voice_id</p>
+      <input id="elSaken" placeholder="ElevenLabs voice_id" />
+      <p class="mini-label">林创 的 voice_id</p>
+      <input id="elRinso" placeholder="ElevenLabs voice_id" />
+      <p class="mini-note">voice_id 在 Voice Library 复制；日语用 eleven_multilingual_v2。预生成语音包会优先播放。</p>
+      <a class="mini-link" href="https://elevenlabs.io/voice-library" target="_blank" rel="noreferrer">打开 ElevenLabs 音色库 →</a>
+    </div>
+    <p class="mini-note">语音为 AI 合成，并非原作声优；请勿冒充官方。</p>
+    <p class="mini-label">自由聊天语音语言</p>
+    <div class="level-row" id="voiceLangs">
+      <button data-lang="auto">自动</button>
+      <button data-lang="zh">中文</button>
+      <button data-lang="ja">日语</button>
+    </div>
+    <p class="mini-note">自动：MiniMax 的 Japanese_ 音色会先翻成日语再读，其他直接读中文；ElevenLabs 默认中文，可手动切日语。</p>
+    <button id="voiceSave">保存</button>
+    <button data-close>关闭</button>
+  </div>
+</div>
+
+<div class="mini" id="proactiveConfirm" hidden>
+  <div class="mini-card">
+    <h3>开启主动消息？</h3>
+    <p class="confirm-text">
+      开启后，他们会在你很久没来的时候自己发消息。<br />
+      这会自动调用 AI，消耗你的 token / 额度；频率越高，调用次数越多。<br />
+      每个角色按自己的性格决定频率，你可以在设置里调，也可以随时关闭。
+    </p>
+    <button id="proactiveYes">开启</button>
+    <button id="proactiveNo">取消</button>
+  </div>
+</div>
+
+<div class="mini" id="aiMini" hidden>
+  <div class="mini-card">
+    <h3>AI 接口</h3>
+    <input id="aiEndpoint" placeholder="接口地址，如 https://api.deepseek.com/v1" />
+    <input id="aiModel" placeholder="模型，如 deepseek-chat" />
+    <input id="aiKey" type="password" placeholder="API Key" autocomplete="off" />
+    <button id="aiSave">保存</button>
+    <button data-close>取消</button>
+  </div>
+</div>
+
+<div class="mini" id="musicMini" hidden>
+  <div class="mini-card music-card">
+    <h3>一起听</h3>
+    <div class="level-row" id="musicTabs">
+      <button data-tab="mine">他的歌</button>
+      <button data-tab="all">全部</button>
+      <button data-tab="free">可商用</button>
+    </div>
+    <p class="mini-note">「仅本地 / 仅个人 / 待确认」的曲目不要随项目公开分发。</p>
+    <div class="music-list" id="musicList"></div>
+    <div class="music-seek-row">
+      <input class="music-seek" type="range" id="musicSeek" min="0" max="1000" value="0" />
+      <span id="musicTime">0:00 / 0:00</span>
+    </div>
+    <div class="music-player">
+      <button class="music-play" id="musicPlay" aria-label="播放">▶</button>
+      <div class="music-meta">
+        <b id="musicTitle">还没有歌</b>
+        <small id="musicSub">把 mp3 放进 assets/music/，刷新列表</small>
+      </div>
+    </div>
+    <div class="music-vol-row">
+      <span class="music-vol-label">音量</span>
+      <input class="music-vol" type="range" id="musicVol" min="0" max="100" value="80" />
+    </div>
+    <button data-close>关闭</button>
+  </div>
+</div>
+
+<div class="mini" id="permMini" hidden>
+  <div class="mini-card">
+    <h3>权限</h3>
+    <p class="confirm-text" id="permText">开启后，他会知道你什么时候离开、什么时候回来。<br />这只是 App 里的模拟，不会真的读取你的手机。</p>
+    <button id="permYes">允许</button>
+    <button data-close>关闭</button>
+  </div>
+</div>
+
+<div class="mini" id="statusMini" hidden>
+  <div class="mini-card status-card">
+    <h3>他现在知道</h3>
+    <div class="status-list" id="statusList"></div>
+    <p class="mini-note">仅来自浏览器接口，不会读取其他应用或文件。</p>
+    <button data-close>关闭</button>
+  </div>
+</div>
+
+<div class="mini" id="aboutMini" hidden>
+  <div class="mini-card about-card">
+    <h3>关于 / 版权</h3>
+    <div class="about-body">
+      <p>《EmptyBox 空盒子》的角色与 CG 版权归 <b>七零 / 巴洛</b>（MIMU 製作組）所有。</p>
+      <p>这是一个非商业陪伴 App，与官方无关；如原作者要求，会立即删除。</p>
+      <p class="about-credits">原作：七零 / 巴洛 · 前端：Romi</p>
+      <p class="about-contact">联系 QQ：2568223944</p>
+    </div>
+    <button data-close>关闭</button>
+  </div>
+</div>
+
+<div class="leave" id="leave" hidden>
+  <p class="leave-text" id="leaveText"></p>
+  <button id="leaveClose">我回来了</button>
+</div>
+
+<div class="cg" id="cg" hidden>
+  <div class="cg-top">
+    <span class="cg-title" id="cgTitle">CG</span>
+    <button class="cg-close" id="cgClose">×</button>
+  </div>
+  <div class="cg-tabs" id="cgTabs">
+    <button data-cg="load">Load</button>
+    <button data-cg="saken">左见</button>
+    <button data-cg="rinso">林创</button>
+  </div>
+  <div class="cg-grid" id="cgGrid"></div>
+  <div class="cg-view" id="cgView" hidden>
+    <button class="cg-nav prev" id="cgPrev">‹</button>
+    <img id="cgImg" alt="" />
+    <button class="cg-nav next" id="cgNext">›</button>
+    <div class="cg-bar">
+      <span id="cgIndex">1 / 1</span>
+      <button id="cgSet">设为背景</button>
+      <a id="cgSave" download>保存这张</a>
+    </div>
+    <button class="cg-back" id="cgBack">返回列表</button>
+  </div>
+</div>
+
+<script type="module" src="js/after.js?v=79"></script>
+</body>
+</html>

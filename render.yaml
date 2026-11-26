@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: after-emptybox
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /after.html
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: ALLOWED_UPSTREAMS
+        value: api.deepseek.com,api.openai.com,api.moonshot.cn,open.bigmodel.cn,dashscope.aliyuncs.com,api.siliconflow.cn,openrouter.ai,generativelanguage.googleapis.com
