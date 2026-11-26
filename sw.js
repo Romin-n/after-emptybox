@@ -1,4 +1,4 @@
-const CACHE = 'after-v3';
+const CACHE = 'after-v5';
 const CORE = [
   '/after.html',
   '/css/after.css',

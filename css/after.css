@@ -447,29 +447,6 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
 }
 
 /* ---------------- 见面 ---------------- */
-.char-card {
-  position: absolute;
-  right: 6%;
-  bottom: 8%;
-  width: min(24vw, 320px);
-  height: min(74vh, 700px);
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-  z-index: 2;
-}
-.char-card-img {
-  position: absolute;
-  inset: 0;
-  background-size: contain;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  opacity: 1;
-  transition: opacity 0.3s var(--ease);
-}
-
 .scene {
   position: fixed;
   inset: 0;
@@ -908,16 +885,7 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
     -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 88%);
     mask-image: linear-gradient(to bottom, #000 35%, transparent 88%);
   }
-  .char-card {
-    width: 62vw;
-    height: 42vh;
-    right: 50%;
-    left: auto;
-    top: 7%;
-    bottom: auto;
-    transform: translateX(50%);
-  }
-  .stage { align-items: flex-start; padding: 52vh 22px 0; }
+  .stage { align-items: flex-start; padding: 22vh 22px 0; }
   .type { width: 100%; }
   .latin { font-size: clamp(46px, 12vw, 72px); }
   .cn { font-size: 16px; }

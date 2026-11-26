@@ -7,7 +7,6 @@ const CAST = [
     cn: 'Load',
     img: '/assets/cg/load-2.jpg',
     sprite: '/assets/portraits/load.jpg',
-    cardSprite: '/assets/sprites/load.png',
     cg: '/assets/cg/load-2.jpg',
     cgs: [
       '/assets/cg/load-1.jpg',
@@ -43,7 +42,6 @@ const CAST = [
     cn: '左见',
     img: '/assets/cg/saken-1.jpg',
     sprite: '/assets/portraits/saken.jpg',
-    cardSprite: '/assets/sprites/saken.png',
     cg: '/assets/cg/saken-1.jpg',
     cgs: [
       '/assets/cg/saken-1.jpg',
@@ -76,7 +74,6 @@ const CAST = [
     cn: '林创',
     img: '/assets/cg/rinso-5.jpg',
     sprite: '/assets/portraits/rinso.jpg',
-    cardSprite: '/assets/sprites/rinso.png',
     cg: '/assets/cg/rinso-5.jpg',
     cgs: [
       '/assets/cg/rinso-1.jpg',
@@ -121,7 +118,6 @@ const els = {
   cast: $('#cast'),
   enter: $('#enter'),
   portraitNext: $('#portraitNext'),
-  charCardImg: $('#charCardImg'),
   intro: $('#intro'),
   introCss: $('#introCss'),
   video: $('#introVideo'),
@@ -206,7 +202,6 @@ const els = {
 
 let active = 0;
 let portraitTimer = null;
-let cardTimer = null;
 let introDone = false;
 
 /* ---------------- 角色卡 ---------------- */
@@ -281,15 +276,6 @@ function applyCharacter(index, { flash = false } = {}) {
   els.quote.textContent = ch.quote;
   els.desc.textContent = ch.desc;
   els.talkName.textContent = ch.cn;
-
-  clearTimeout(cardTimer);
-  if (ch.cardSprite) {
-    els.charCardImg.style.opacity = '0';
-    cardTimer = setTimeout(() => {
-      els.charCardImg.style.backgroundImage = `url(${ch.cardSprite})`;
-      els.charCardImg.style.opacity = '1';
-    }, 160);
-  }
 
   [...els.cast.children].forEach((b, i) => b.classList.toggle('on', i === active));
 
