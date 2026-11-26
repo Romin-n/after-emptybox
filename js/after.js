@@ -167,6 +167,8 @@ const els = {
   musicSeek: $('#musicSeek'),
   musicTime: $('#musicTime'),
   musicVol: $('#musicVol'),
+  musicOpen: $('#musicOpen'),
+  musicRefresh: $('#musicRefresh'),
   nowPlaying: $('#nowPlaying'),
   npTitle: $('#npTitle'),
   permMini: $('#permMini'),
@@ -1263,12 +1265,17 @@ function renderMusic() {
   if (!filtered.length) {
     const p = document.createElement('div');
     p.className = 'music-empty';
-    p.textContent =
-      musicTab === 'mine'
-        ? '他的歌还没下载。切到「全部」看看。'
-        : musicTab === 'free'
-          ? '还没有标记为「可商用」的曲目。'
-          : '这里还没有歌。';
+    if (!music.tracks.length) {
+      p.innerHTML =
+        '<b>这里还没有歌</b><br>本地版：把 mp3 / flac 放进程序目录的 <code>music/</code> 文件夹，再点「刷新列表」。<br>公开版：由管理员添加，玩家不能上传。';
+    } else {
+      p.textContent =
+        musicTab === 'mine'
+          ? '他的歌还没下载。切到「全部」看看。'
+          : musicTab === 'free'
+            ? '还没有标记为「可商用」的曲目。'
+            : '这里还没有歌。';
+    }
     els.musicList.appendChild(p);
     return;
   }
@@ -1389,6 +1396,20 @@ els.musicVol.addEventListener('input', () => {
   }
 });
 els.musicPlay.addEventListener('click', toggleMusic);
+els.musicRefresh.addEventListener('click', async () => {
+  await loadMusic();
+  toast('已刷新');
+});
+els.musicOpen.addEventListener('click', async () => {
+  try {
+    const res = await fetch('/api/music/open', { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    toast('已打开 music 文件夹');
+  } catch (e) {
+    toast(`打不开：${e.message}`);
+  }
+});
 els.talkMusic.addEventListener('click', () => {
   musicTab = 'mine';
   updateMusicTabs();

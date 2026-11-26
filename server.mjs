@@ -547,11 +547,12 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/api/music/list') {
     const dirs = [
-      { dir: path.join(ROOT, 'assets', 'music'), local: false },
-      { dir: path.join(ROOT, 'assets', 'music-local'), local: true },
+      { dir: path.join(ROOT, 'music'), base: 'music', local: false },
+      { dir: path.join(ROOT, 'assets', 'music'), base: 'assets/music', local: false },
+      { dir: path.join(ROOT, 'assets', 'music-local'), base: 'assets/music-local', local: true },
     ];
     const tracks = [];
-    for (const { dir, local } of dirs) {
+    for (const { dir, base, local } of dirs) {
       try {
         const files = await fs.readdir(dir);
         for (const f of files) {
@@ -559,7 +560,7 @@ const server = http.createServer(async (req, res) => {
           tracks.push({
             name: f.replace(/\.[^.]+$/, ''),
             file: f,
-            url: `/assets/${local ? 'music-local' : 'music'}/${encodeURIComponent(f)}`,
+            url: `/${base}/${encodeURIComponent(f)}`,
             local,
           });
         }
@@ -569,6 +570,20 @@ const server = http.createServer(async (req, res) => {
     }
     tracks.sort((a, b) => a.name.localeCompare(b.name, 'zh'));
     return sendJson(res, 200, { tracks });
+  }
+
+  if (url.pathname === '/api/music/open') {
+    const ip = req.socket.remoteAddress || '';
+    const local = /^(::1|127\.|::ffff:127\.)/.test(ip);
+    if (!local || process.platform !== 'win32') {
+      return sendJson(res, 403, { error: '仅本地 Windows 版可用' });
+    }
+    try {
+      spawn('explorer.exe', [path.join(ROOT, 'music')], { detached: true, stdio: 'ignore' }).unref();
+      return sendJson(res, 200, { ok: true });
+    } catch (e) {
+      return sendJson(res, 500, { error: e.message });
+    }
   }
 
   if (url.pathname === '/api/mcp/status') {
